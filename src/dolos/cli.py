@@ -61,6 +61,11 @@ def create(
         dolos create "Sample text." --start-date "2025-01-01 10:00:00"
     """
     try:
+        # Ensure output path has .docx extension
+        if not str(output).lower().endswith('.docx'):
+            output = Path(str(output) + '.docx')
+            console.print(f"[yellow]Info:[/yellow] Added .docx extension to output path: {output}")
+
         # Get text content
         if text is None and input_file is None:
             console.print("[red]Error:[/red] Must provide either text argument or --input-file", style="bold")
@@ -409,6 +414,12 @@ def interactive_create():
     # Get output path
     console.print("\n[bold]Step 2: Output Settings[/bold]")
     output_path = Prompt.ask("Output filename", default="output.docx")
+
+    # Ensure .docx extension
+    if not output_path.lower().endswith('.docx'):
+        output_path = output_path + '.docx'
+        console.print(f"[yellow]Info:[/yellow] Added .docx extension: {output_path}")
+
     author = Prompt.ask("Document author", default="Dolos")
 
     # Get timestamp settings
