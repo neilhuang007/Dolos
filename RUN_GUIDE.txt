@@ -1,0 +1,85 @@
+================================================================================
+                     DOLOS - QUICK RUN GUIDE
+================================================================================
+
+SIMPLE START:
+-------------
+Just type: dolos
+
+Then follow the prompts!
+
+
+MULTI-LINE TEXT INPUT:
+----------------------
+When you see this prompt:
+  "Enter your text below:"
+  "When done, type 'END' on a new line and press Enter"
+
+Do this:
+1. Paste your text (or type it)
+2. Press Enter to add more lines (as many as you want)
+3. Type END on a new line
+4. Press Enter
+
+Example:
+  Enter your text below:
+
+  This is sentence one.
+  This is sentence two with more content.
+  This is the final sentence.
+  END
+  [Press Enter]
+
+
+EXAMPLE SESSION:
+----------------
+C:\Users\neil_\PycharmProjects\Dolos> dolos
+
+What would you like to do? create
+
+How would you like to input text? paste
+
+Enter your text below:
+Government document content here.
+Sensitive information redacted.
+Final version approved.
+END
+
+Output filename (output.docx): classified.docx
+Document author (Dolos): Redaction Office
+Use custom start date? y
+Start date/time: 2024-03-15 10:00:00
+Minimum seconds between edits (30): 60
+Maximum seconds between edits (300): 600
+Database path (data/dolos.db): [Press Enter]
+
+Create document? y
+
+SUCCESS: Document created successfully!
+
+
+COMMAND-LINE MODE (Alternative):
+---------------------------------
+dolos create --input-file mytext.txt --output doc.docx
+
+
+OTHER COMMANDS:
+---------------
+dolos view-metadata doc.docx          # View timestamps
+dolos sanitize doc.docx                # Remove all metadata
+dolos edit-timestamp doc.docx          # Edit specific timestamps
+dolos --help                           # Show all commands
+
+
+NOTES:
+------
+- Type "END" (case insensitive) to finish text input
+- Or use Ctrl+Z then Enter (Windows) / Ctrl+D (Mac/Linux)
+- Documents saved with .docx extension
+- Metadata stored in data/dolos.db
+- Open in Microsoft Word to see track changes with timestamps
+
+
+READY TO USE!
+-------------
+Just run: dolos

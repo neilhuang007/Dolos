@@ -1,0 +1,117 @@
+================================================================================
+                    NEW FEATURES ADDED TO DOLOS
+================================================================================
+
+ISSUE 1: TEXT APPEARS AS "SUGGESTIONS" IN WORD
+------------------------------------------------
+SOLUTION: Use --no-track-changes flag
+
+Command-line:
+  dolos create "text here" --no-track-changes --output clean.docx
+
+Interactive mode:
+  Step 6: Track Changes
+  Create clean document WITHOUT track changes? [y/n]: y
+
+WHAT THIS DOES:
+- Creates clean, final document
+- No track changes (no red underlines/suggestions)
+- Text appears as regular content in Word
+- Professional appearance
+
+
+ISSUE 2: EDIT DOCUMENT METADATA
+--------------------------------
+SOLUTION: New metadata flags added
+
+All available flags:
+  --title "Document Title"           # Sets document title
+  --subject "Subject"                # Sets document subject
+  --keywords "tag1, tag2, tag3"      # Sets keywords/tags
+  --comments "Notes here"            # Sets document comments
+  --total-edit-time 43               # Sets total editing time (minutes)
+
+Example:
+  dolos create "text" \
+    --no-track-changes \
+    --title "My Report" \
+    --subject "Financial" \
+    --keywords "Q4, finance, 2024" \
+    --comments "Approved for release" \
+    --total-edit-time 43 \
+    --output report.docx
+
+
+INTERACTIVE MODE METADATA
+--------------------------
+When you run: dolos
+
+You'll see new step:
+
+  Step 5: Document Metadata (Optional)
+  Add document metadata (title, keywords, etc.)? [y/n]: y
+
+  Document title: [enter title]
+  Document subject: [enter subject]
+  Keywords/tags: [enter keywords]
+  Comments: [enter comments]
+  Total editing time (minutes): [enter number]
+
+
+COMPLETE EXAMPLE
+----------------
+Create a clean, professional document with all metadata:
+
+  dolos create --input-file report.txt \
+    --output final_report.docx \
+    --no-track-changes \
+    --title "Q4 Financial Report" \
+    --subject "Finance Department" \
+    --author "Finance Team" \
+    --keywords "finance, Q4, report, 2024" \
+    --comments "Approved by CFO on 2024-12-01" \
+    --total-edit-time 120 \
+    --start-date "2024-11-01 09:00:00"
+
+This creates:
+- Clean document (no suggestions)
+- Custom title visible in Word
+- Subject, keywords, comments set
+- Total editing time: 120 minutes (2 hours)
+- Backdated to November 1, 2024
+
+
+VIEW METADATA IN WORD
+----------------------
+1. Open .docx file in Microsoft Word
+2. File > Info
+3. Click "Properties" > "Advanced Properties"
+4. See your custom metadata:
+   - Title: [your title]
+   - Subject: [your subject]
+   - Keywords: [your keywords]
+   - Comments: [your comments]
+   - Total Editing Time: [your time]
+   - 编辑时间总计: [显示您设置的时间]
+
+
+QUICK COMPARISON
+----------------
+WITH Track Changes (default):
+- Text appears as suggestions/insertions
+- Red underlines in Word
+- Shows detailed edit history
+- Each sentence has timestamp
+
+WITHOUT Track Changes (--no-track-changes):
+- Clean final document
+- No suggestions or red lines
+- Professional appearance
+- Still has metadata and timestamps
+
+
+FOR MORE HELP
+-------------
+See detailed examples: USAGE_EXAMPLES.md
+See full guide: docs/USER_GUIDE.md
+Command help: dolos create --help
