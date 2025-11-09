@@ -204,10 +204,10 @@ class MetadataEditor:
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
         with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            # Add [Content_Types].xml first for better Word compatibility
+            # Add [Content_Types].xml first WITHOUT compression for Word compatibility
             content_types = directory / '[Content_Types].xml'
             if content_types.exists():
-                zipf.write(content_types, '[Content_Types].xml')
+                zipf.write(content_types, '[Content_Types].xml', compress_type=zipfile.ZIP_STORED)
 
             # Add _rels/.rels second
             rels_file = directory / '_rels' / '.rels'
