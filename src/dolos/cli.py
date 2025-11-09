@@ -44,6 +44,7 @@ def create(
     start_date: Optional[str] = typer.Option(None, "--start-date", "-s", help="Start timestamp (YYYY-MM-DD HH:MM:SS)"),
     min_interval: int = typer.Option(30, "--min-interval", help="Minimum seconds between edits"),
     max_interval: int = typer.Option(300, "--max-interval", help="Maximum seconds between edits"),
+    last_edit_time: Optional[str] = typer.Option(None, "--last-edit-time", "-l", help="Custom last edit time (YYYY-MM-DD HH:MM:SS) - must be >= creation time + minimal editing time"),
     no_track_changes: bool = typer.Option(False, "--no-track-changes", help="Create clean document without any track changes metadata"),
     accept_all_changes: bool = typer.Option(False, "--accept-all-changes", help="Keep timestamps but show text as final (not suggestions)"),
     title: Optional[str] = typer.Option(None, "--title", help="Document title"),
@@ -81,13 +82,21 @@ def create(
             console.print("[red]Error:[/red] Text content is empty", style="bold")
             sys.exit(1)
 
-        # Parse timestamp
+        # Parse timestamps
         start_timestamp = None
         if start_date:
             try:
                 start_timestamp = parse_timestamp(start_date)
             except ValueError as e:
                 console.print(f"[red]Error:[/red] {e}", style="bold")
+                sys.exit(1)
+
+        custom_last_edit_timestamp = None
+        if last_edit_time:
+            try:
+                custom_last_edit_timestamp = parse_timestamp(last_edit_time)
+            except ValueError as e:
+                console.print(f"[red]Error:[/red] Invalid last edit time format: {e}", style="bold")
                 sys.exit(1)
 
         # Parse sentences
@@ -109,7 +118,8 @@ def create(
             start_timestamp=start_timestamp,
             min_interval_seconds=min_interval,
             max_interval_seconds=max_interval,
-            author=author
+            author=author,
+            custom_last_edit_time=custom_last_edit_timestamp
         )
         console.print(f"[green]>[/green] Metadata stored in database")
 
@@ -449,6 +459,21 @@ def interactive_create():
         console.print("[yellow]Warning:[/yellow] Min > Max, swapping values")
         min_interval, max_interval = max_interval, min_interval
 
+    # Get custom last edit time
+    use_custom_last_edit = Confirm.ask("Use custom last edit time?", default=False)
+
+    custom_last_edit_timestamp = None
+    if use_custom_last_edit:
+        last_edit_str = Prompt.ask(
+            "Last edit date/time",
+            default=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        )
+        try:
+            custom_last_edit_timestamp = parse_timestamp(last_edit_str)
+        except ValueError as e:
+            console.print(f"[yellow]Warning:[/yellow] Invalid date format, will use default (last sentence time)")
+            custom_last_edit_timestamp = None
+
     # Document metadata
     console.print("\n[bold]Step 5: Document Metadata (Optional)[/bold]")
     add_metadata = Confirm.ask("Add document metadata (title, keywords, etc.)?", default=False)
@@ -536,7 +561,8 @@ def interactive_create():
             start_timestamp=start_timestamp,
             min_interval_seconds=min_interval,
             max_interval_seconds=max_interval,
-            author=author
+            author=author,
+            custom_last_edit_time=custom_last_edit_timestamp
         )
 
         console.print(f"[cyan]Building Word document...[/cyan]")
