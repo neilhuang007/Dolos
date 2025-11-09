@@ -28,7 +28,8 @@ class MetadataManager:
         start_timestamp: Optional[datetime] = None,
         min_interval_seconds: int = 30,
         max_interval_seconds: int = 300,
-        author: str = "Dolos"
+        author: str = "Dolos",
+        custom_last_edit_time: Optional[datetime] = None
     ) -> Document:
         """Create a new document with sentences in the database.
 
@@ -39,9 +40,13 @@ class MetadataManager:
             min_interval_seconds: Minimum seconds between sentence edits (default: 30)
             max_interval_seconds: Maximum seconds between sentence edits (default: 300)
             author: Author name
+            custom_last_edit_time: Custom last edit time (must be >= creation_time + minimal_editing_time)
 
         Returns:
             Created Document object
+
+        Raises:
+            ValueError: If custom_last_edit_time is earlier than minimum allowed time
         """
         session = self.db_manager.get_session()
 
@@ -49,6 +54,24 @@ class MetadataManager:
             # Use current time if no start timestamp provided
             if start_timestamp is None:
                 start_timestamp = datetime.utcnow()
+
+            # Validate custom_last_edit_time if provided
+            if custom_last_edit_time is not None:
+                # Calculate minimal editing time: (num_sentences - 1) * min_interval
+                from datetime import timedelta
+                num_sentences = len(sentences)
+                if num_sentences > 1:
+                    minimal_editing_time = timedelta(seconds=(num_sentences - 1) * min_interval_seconds)
+                    minimal_last_edit_time = start_timestamp + minimal_editing_time
+
+                    if custom_last_edit_time < minimal_last_edit_time:
+                        raise ValueError(
+                            f"Custom last edit time ({custom_last_edit_time.strftime('%Y-%m-%d %H:%M:%S')}) "
+                            f"must be at least creation time + minimal editing time "
+                            f"({minimal_last_edit_time.strftime('%Y-%m-%d %H:%M:%S')}). "
+                            f"Minimal editing time: {(num_sentences - 1) * min_interval_seconds} seconds "
+                            f"({num_sentences - 1} intervals × {min_interval_seconds}s)"
+                        )
 
             # Create document
             doc = Document(
@@ -63,6 +86,7 @@ class MetadataManager:
 
             # Create sentences with randomized intervals
             current_timestamp = start_timestamp
+            last_sentence = None
             for idx, sentence_text in enumerate(sentences):
                 sentence = Sentence(
                     document_id=doc.id,
@@ -74,6 +98,7 @@ class MetadataManager:
                     revision_id=idx + 1
                 )
                 session.add(sentence)
+                last_sentence = sentence  # Keep reference to last sentence
 
                 # Generate random interval for next sentence
                 if idx < len(sentences) - 1:  # Don't increment after last sentence
@@ -82,8 +107,15 @@ class MetadataManager:
                     interval = random.randint(min_interval_seconds, max_interval_seconds)
                     current_timestamp = current_timestamp + timedelta(seconds=interval)
 
-            # Update document last_modified to match last sentence
-            doc.last_modified = current_timestamp
+            # Update document last_modified
+            # Use custom_last_edit_time if provided, otherwise use last sentence's timestamp
+            if custom_last_edit_time is not None:
+                doc.last_modified = custom_last_edit_time
+                # Also update the last sentence's timestamp to match
+                if last_sentence:
+                    last_sentence.modified_timestamp = custom_last_edit_time
+            else:
+                doc.last_modified = current_timestamp
 
             session.commit()
 
