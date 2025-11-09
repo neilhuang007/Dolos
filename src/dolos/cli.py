@@ -246,6 +246,73 @@ def edit_timestamp(
 
 
 @app.command()
+def edit_metadata(
+    document: Path = typer.Argument(..., help="DOCX file to edit"),
+    author: Optional[str] = typer.Option(None, "--author", "-a", help="Set document author"),
+    created: Optional[str] = typer.Option(None, "--created", "-c", help="Set creation time (YYYY-MM-DD HH:MM:SS)"),
+    modified: Optional[str] = typer.Option(None, "--modified", "-m", help="Set last modified time (YYYY-MM-DD HH:MM:SS)"),
+    total_edit_time: Optional[int] = typer.Option(None, "--total-edit-time", "-t", help="Set total editing time in minutes"),
+):
+    """Edit document metadata properties.
+
+    Example:
+        dolos edit-metadata document.docx --author "John Doe" --created "2025-01-01 10:00:00"
+        dolos edit-metadata document.docx --modified "2025-01-15 14:30:00" --total-edit-time 720
+    """
+    try:
+        if not document.exists():
+            console.print(f"[red]Error:[/red] Document not found: {document}", style="bold")
+            sys.exit(1)
+
+        # Check if at least one option is provided
+        if not any([author, created, modified, total_edit_time]):
+            console.print("[red]Error:[/red] At least one metadata option must be provided", style="bold")
+            console.print("Use --help to see available options")
+            sys.exit(1)
+
+        # Parse timestamps
+        created_dt = None
+        if created:
+            try:
+                created_dt = parse_timestamp(created)
+            except ValueError as e:
+                console.print(f"[red]Error:[/red] Invalid created time: {e}", style="bold")
+                sys.exit(1)
+
+        modified_dt = None
+        if modified:
+            try:
+                modified_dt = parse_timestamp(modified)
+            except ValueError as e:
+                console.print(f"[red]Error:[/red] Invalid modified time: {e}", style="bold")
+                sys.exit(1)
+
+        # Apply metadata changes
+        console.print(f"[cyan]Updating document metadata...[/cyan]")
+        MetadataEditor.edit_metadata(
+            docx_path=str(document),
+            author=author,
+            created_time=created_dt,
+            modified_time=modified_dt,
+            total_edit_minutes=total_edit_time
+        )
+
+        console.print(f"\n[bold green]OK Metadata updated successfully![/bold green]")
+        if author:
+            console.print(f"[dim]Author:[/dim] {author}")
+        if created_dt:
+            console.print(f"[dim]Created:[/dim] {created_dt.strftime('%Y-%m-%d %H:%M:%S')}")
+        if modified_dt:
+            console.print(f"[dim]Modified:[/dim] {modified_dt.strftime('%Y-%m-%d %H:%M:%S')}")
+        if total_edit_time:
+            console.print(f"[dim]Total edit time:[/dim] {total_edit_time} minutes ({total_edit_time // 60}h {total_edit_time % 60}m)")
+
+    except Exception as e:
+        console.print(f"\n[bold red]Error:[/bold red] {e}", style="bold")
+        sys.exit(1)
+
+
+@app.command()
 def view_metadata(
     document: Path = typer.Argument(..., help="DOCX file to view metadata"),
     db_path: str = typer.Option("data/dolos.db", "--db", help="Database path"),

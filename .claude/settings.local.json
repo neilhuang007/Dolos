@@ -12,7 +12,10 @@
       "Bash(python:*)",
       "Bash(dolos create:*)",
       "Bash(chcp 65001)",
-      "Bash(dolos view-metadata:*)"
+      "Bash(dolos view-metadata:*)",
+      "Bash(dolos edit --help:*)",
+      "Bash(dolos edit-timestamp:*)",
+      "Bash(dolos edit-metadata:*)"
     ],
     "deny": [],
     "ask": []
