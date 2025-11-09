@@ -1,5 +1,20 @@
 # Dolos User Guide
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Installation](#installation)
+- [Core Concepts](#core-concepts)
+- [Commands](#commands)
+- [Interactive Mode](#interactive-mode)
+- [Timestamp Formats](#timestamp-formats)
+- [Advanced Usage](#advanced-usage)
+- [Viewing Results in Microsoft Word](#viewing-results-in-microsoft-word)
+- [Database Management](#database-management)
+- [Troubleshooting](#troubleshooting)
+- [Best Practices](#best-practices)
+- [Limitations](#limitations)
+
 ## Overview
 
 Dolos is a command-line tool for manipulating Microsoft Word document metadata and revision history. It allows you to create documents with fake edit histories, edit timestamps at sentence-level granularity, and sanitize documents by removing all metadata.
@@ -13,16 +28,21 @@ Dolos is a command-line tool for manipulating Microsoft Word document metadata a
 
 ### Install from source
 
+**For Users:**
+
 ```bash
-# Clone or navigate to the Dolos directory
 cd Dolos
-
-# Install in development mode
-pip install -e .
-
-# Or install from requirements.txt
-pip install -r requirements.txt
+pip install .
 ```
+
+**For Local Development:**
+
+```bash
+cd Dolos
+pip install -e .
+```
+
+The `-e` flag installs in editable mode, allowing you to modify the code and see changes immediately without reinstalling.
 
 ### Verify installation
 
@@ -257,6 +277,196 @@ Dolos supports multiple timestamp formats:
 - `YYYY/MM/DD` - Date only with slashes
 
 All timestamps are stored in UTC.
+
+## Interactive Mode
+
+### Launching Interactive Mode
+
+Simply run `dolos` without any arguments:
+
+```bash
+dolos
+```
+
+You'll see a welcome screen prompting you to choose an action: create, edit, sanitize, view, or quit.
+
+### Actions
+
+#### 1. Create Document
+
+Creates a new Word document with fake edit history through a guided workflow:
+
+**Step 1: Text Content**
+- Choose `paste` to enter text directly (multi-line supported)
+- Choose `file` to read from a file
+
+**Multi-line Text Input:**
+
+Windows:
+1. Paste text (Ctrl+V or right-click)
+2. Press Enter to go to a new line
+3. Press Ctrl+Z then Enter to finish
+
+Linux/Mac:
+1. Paste text (Ctrl+Shift+V or Cmd+V)
+2. Press Enter to go to a new line
+3. Press Ctrl+D to finish
+
+Alternative: Type `END` on a new line and press Enter (case-insensitive)
+
+**Step 2: Output Settings**
+- Specify output filename
+- Set document author
+
+**Step 3: Timestamp Configuration**
+- Choose whether to use a custom start date
+- Enter start date/time if custom timestamp desired
+
+**Step 4: Edit Interval Settings**
+- Set minimum seconds between edits (default: 30)
+- Set maximum seconds between edits (default: 300)
+
+**Step 5: Document Metadata (Optional)**
+- Add title, subject, keywords, comments
+- Set total editing time in minutes
+
+**Step 6: Document Mode**
+- Choose how document appears in Word:
+  - `final` - Text appears final with timestamps (recommended)
+  - `suggestions` - Text shows as track changes
+  - `clean` - No timestamps, minimal metadata
+
+**Step 7: Database Path**
+- Specify database location (default: data/dolos.db)
+
+**Summary & Confirmation**
+- Review all settings before creation
+- Confirm to create the document
+
+#### 2. Edit Timestamp
+
+Modify the timestamp for a specific sentence in an existing document.
+
+**Workflow:**
+1. Enter document path
+2. Specify database path (if not default)
+3. View table of current sentences with timestamps
+4. Select sentence number to edit (0-indexed)
+5. Enter new timestamp
+6. Confirm the change
+
+#### 3. Sanitize Document
+
+Remove all metadata and track changes from a document.
+
+**Workflow:**
+1. Enter path to document to sanitize
+2. Specify output path (or leave empty to overwrite)
+3. Choose whether to use custom neutral date
+4. Review what will be removed
+5. Confirm sanitization
+
+**Removes:**
+- All track changes
+- Author information
+- Revision history
+- Application metadata
+
+#### 4. View Metadata
+
+Display metadata for an existing document.
+
+**Workflow:**
+1. Enter document path
+2. Specify database path (if not default)
+3. View document and sentence metadata in formatted tables
+
+#### 5. Quit
+
+Exit the interactive mode.
+
+### Interactive Mode Tips
+
+**Default Values:**
+Most prompts show default values in parentheses. Press Enter to accept the default.
+
+Example:
+```
+Output filename (output.docx): [Press Enter for default]
+```
+
+**Choices:**
+When presented with options in brackets, type one of the choices:
+```
+How would you like to input text? [paste/file] (paste):
+```
+Type `paste` or `file`. Default is `paste`.
+
+**Yes/No Prompts:**
+```
+Use custom start date? [y/n] (n):
+```
+- `y` or `yes` = Yes
+- `n` or `no` = No
+- Press Enter for default
+
+**Number Prompts:**
+Enter numeric values. Invalid input will prompt you to try again.
+
+**Timestamp Formats:**
+Timestamps accept multiple formats:
+- `2025-01-08 14:30:00` - Full datetime
+- `2025-01-08 14:30` - Without seconds
+- `2025-01-08` - Date only
+- `2025/01/08 14:30:00` - Alternative separator
+
+**Cancelling:**
+During confirmation prompts, you can cancel by entering `n`:
+```
+Create document? [Y/n]: n
+Cancelled
+```
+
+### Scripting Interactive Input
+
+While interactive mode is designed for human use, you can pipe input for automation:
+
+```bash
+cat > input.txt << EOF
+create
+paste
+This is sentence one. This is sentence two.
+END
+test.docx
+TestBot
+y
+2024-01-01 10:00:00
+30
+300
+data/dolos.db
+y
+EOF
+
+dolos < input.txt
+```
+
+However, for scripting and automation, command-line mode is recommended as it provides better control and error handling.
+
+### Interactive Mode vs Command-Line Mode
+
+| Feature | Interactive Mode | Command-Line Mode |
+|---------|-----------------|-------------------|
+| Ease of Use | Beginner-friendly with step-by-step guidance | Requires learning command syntax |
+| Speed | Step-by-step process | Fast for experienced users |
+| Multi-line Input | Easy paste with visual feedback | File input recommended |
+| Scripting | Possible but awkward | Designed for automation |
+| Discoverability | Shows all available options | Requires --help flag |
+| Error Recovery | Re-prompts on error | Must re-run entire command |
+
+**Recommendation:**
+- Use interactive mode when learning or exploring features
+- Use command-line mode for automation, scripts, and quick tasks
+- Both modes produce identical results
 
 ## Advanced Usage
 
